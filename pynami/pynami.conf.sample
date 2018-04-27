@@ -1,0 +1,8 @@
+# this is a toml formatted config file for pynami
+# this file should be stored in ~/.pynami.conf
+# this is only needed for ne namitool, not for the library itself
+
+[nami]
+username = "123456"              # This is your Mitgliedsnummer
+password = "YOURPASSWORD"        # Your NAMI password
+stammesnummer = "131913"         # Your DPSG Stammesnummer without slashes

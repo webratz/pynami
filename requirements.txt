@@ -1,2 +1,4 @@
 requests
 marshmallow
+tabulate
+pytoml

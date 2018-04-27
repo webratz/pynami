@@ -1,5 +1,6 @@
 from datetime import datetime
-from marshmallow import Schema, fields, post_load
+from collections import OrderedDict
+from marshmallow import Schema, fields, post_load # pylint: disable=E0401
 
 class NamiDateTimeField(fields.DateTime):
     def _deserialize(self, value, attr, data):
@@ -26,6 +27,19 @@ class SearchMitglied(object):
     def table_view(self):
         field_blacklist = ['representedClass', 'mglType', 'staatsangehoerigkeit', 'status', 'geschlecht', 'eintrittsdatum', 'id', 'wiederverwendenFlag', 'descriptor', 'version', 'lastUpdated', 'id_id']
         return {k: v for k, v in self.data.items() if v is not None and v != '' and k not in field_blacklist}
+
+    def tabulate(self, elements=None):
+        d = OrderedDict()
+        if not elements:
+            elements = ['mitgliedsNummer', 'vorname', 'nachname', 'geburtsDatum']
+        for k in elements :
+            d[k] = self.data[k]
+        return d
+
+    def get_mitglied(self, nami):
+        m = nami.mitglied(self.id_id, 'GET', stammesnummer=nami.config['stammesnummer'])
+        l = MitgliedSchema().load(data=m)
+        return l.data
 
 
 class SearchMitgliedSchema(Schema):
@@ -57,7 +71,7 @@ class SearchMitgliedSchema(Schema):
     entries_staatangehoerigkeitText = fields.String(attribute='staatangehoerigkeitText')
     entries_staatsangehoerigkeit = fields.String(attribute='staatsangehoerigkeit')
     entries_status = fields.String(attribute='status')
-    entries_stufe = fields.String(attribute='telefax')
+    entries_stufe = fields.String(attribute='stufe')
     entries_pfadfinder = fields.String(attribute='pfadfinder')
     entries_telefax = fields.String(attribute='telefax')
     entries_telefon1 = fields.String(attribute='telefon1')
@@ -89,6 +103,18 @@ class Mitglied(object):
     def table_view(self):
         field_blacklist = ['genericField1']
         return {k: v for k, v in self.data.items() if v is not None and v != '' and k not in field_blacklist}
+
+    def tabulate(self, elements=None):
+        d = OrderedDict()
+        if not elements:
+            elements = ['mitgliedsNummer', 'vorname', 'nachname', 'geburtsDatum', 'strasse', 'stufe']
+        for k in elements :
+            d[k] = self.data[k]
+        return d
+
+    def update(self, nami):
+        userjson = MitgliedSchema().dump(self).data
+        nami.mitglied(self.id, 'PUT', stammesnummer=nami.config['stammesnummer'], json=userjson)
 
 class MitgliedSchema(Schema):
     austrittsDatum = NamiDateTimeField()
